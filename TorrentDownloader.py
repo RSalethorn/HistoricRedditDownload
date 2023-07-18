@@ -4,6 +4,7 @@ import time
 import os
 import math
 import logging
+import json
 
 #Secret Config File
 import config
@@ -46,6 +47,8 @@ class TorrentHandler():
         # Only download files including Reddit posts between given dates
         self.select_relevant_files()
 
+        self.get_download_progress("reddit/comments/RC_2013-10.zst")
+
         # Wait for downloads to finish so rest of program can continue (For now)
         self.wait_for_download()
     
@@ -61,6 +64,14 @@ class TorrentHandler():
     
     def update_torrent_info(self):
         self.torrent = self.qb.torrents_info(torrent_hashes=self.torrent_hash)[0]
+
+    def get_download_progress(self, file_path):
+        self.update_torrent_info()
+        print(f"+===== DLP {file_path}")
+        for file in self.torrent.files:
+            if file.name == file_path:
+                print(f"FILE: {file}")
+                return file.progress * 100
     
 
     def wait_for_torrent_added(self):
@@ -99,16 +110,15 @@ class TorrentHandler():
             # Convert file name into date
             date_str = file.name.split("_")[-1].split(".")[0] + "-01"
             date = datetime.strptime(date_str, "%Y-%m-%d")
-            file_names = []
+            self.file_names = []
             # If date on this file is included in the timeframe given set priority to one
             if date >= self.start_date and date <= self.end_date:
                 self.qb.torrents_file_priority(self.torrent_hash, file['id'], 1)
-                metadata_downloaded = True
-                file_names.append(file.name)
+                self.file_names.append(file.name)
             else:
                 # If not don't download (Priority = 0)
                 self.qb.torrents_file_priority(self.torrent_hash, file['id'], 0)
-        logging.info(f"The following files have been chosen as needed for your required search: \n{file_names}")
+        logging.info(f"The following files have been chosen as needed for your required search: \n{self.file_names}")
 
     def wait_for_download(self):
         # Loop waits till torrent is finished downloading
@@ -119,6 +129,8 @@ class TorrentHandler():
                 torrent_download_finished = True
                 logging.info("Torrent download is finished")
             else:
+                for file in self.file_names:
+                    self.get_download_progress(file)
                 total_parts = self.torrent.amount_left + self.torrent.completed
                 percentage_complete = math.floor(100 - ((self.torrent.amount_left / total_parts) * 100))
                 logging.info(f"Torrent {percentage_complete}% downloaded")
