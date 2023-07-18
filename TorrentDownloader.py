@@ -47,8 +47,6 @@ class TorrentHandler():
         # Only download files including Reddit posts between given dates
         self.select_relevant_files()
 
-        self.get_download_progress("reddit/comments/RC_2013-10.zst")
-
         # Wait for downloads to finish so rest of program can continue (For now)
         self.wait_for_download()
     
@@ -65,13 +63,12 @@ class TorrentHandler():
     def update_torrent_info(self):
         self.torrent = self.qb.torrents_info(torrent_hashes=self.torrent_hash)[0]
 
-    def get_download_progress(self, file_path):
+    def get_file_info(self, file_path):
         self.update_torrent_info()
-        print(f"+===== DLP {file_path}")
         for file in self.torrent.files:
             if file.name == file_path:
-                print(f"FILE: {file}")
-                return file.progress * 100
+                #print(f"FILE: {file}")
+                return file
     
 
     def wait_for_torrent_added(self):
