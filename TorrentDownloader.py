@@ -23,7 +23,7 @@ class TorrentHandler():
         # Define directorys to place downloading and downloaded torrents
         self.current_directory = os.path.dirname(os.path.abspath(__file__))
         
-        self.download_location = self.current_directory + "\\Download\\"
+        self.download_location = self.current_directory + "\\Saved\\"
         self.saved_location = self.current_directory + "\\Saved\\"
 
         # Get QBitTorrent Connection Details
@@ -42,13 +42,14 @@ class TorrentHandler():
         self.qb.torrents_add(urls=self.magnet_link, 
                              use_download_path=True, 
                              save_path=self.saved_location, 
-                             download_path=self.download_location)
+                             download_path=self.download_location,
+                             is_sequential_download=True)
         
         # Only download files including Reddit posts between given dates
         self.select_relevant_files()
 
         # Wait for downloads to finish so rest of program can continue (For now)
-        self.wait_for_download()
+        # self.wait_for_download()
     
     def connect(self):
         self.qb = qbittorrentapi.Client(**self.conn_info)
