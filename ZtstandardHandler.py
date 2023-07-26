@@ -24,19 +24,20 @@ class ZstandardHandler():
         with open(file_path, 'rb') as file_handle:
             buffer = ''
             reader = zstandard.ZstdDecompressor(max_window_size=2**31).stream_reader(file_handle)
+            total_waits = 0
             while True:
                 torrent_info = self.torrent_handler.get_file_info(inner_torrent_path)
                 # Progress is 0 to 1 representing how much of the file is downloaded, size is total size in bytes
                 downloaded_total = torrent_info['progress'] *  torrent_info['size']
                 
-                downloaded_total_needed = file_handle.tell() + 2**29
-                total_waits = 0
+                downloaded_total_needed = file_handle.tell() + ((2**27) * 2) 
 
                 if ( downloaded_total_needed > downloaded_total and torrent_info['progress'] != 1):
                     logging.info(f"Waiting for more of {file_path} to download ({downloaded_total}/{downloaded_total_needed})")
                     total_waits += 1
                     time.sleep(0.1 * total_waits)
                 else:
+                    logging.info(f"Reading a chunk of {file_path}")
                     total_waits = 0
 
                     chunk = self.read_and_decode(reader, 
