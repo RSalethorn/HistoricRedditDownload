@@ -5,10 +5,10 @@ import os
 import time
 
 class ZstandardHandler():
-    def __init__(self, torrent_handler):
+    def __init__(self, t_info_storage):
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
-        self.torrent_handler = torrent_handler
+        self.t_info_storage = t_info_storage
     
     # Function decompresses file_path and returns line by line (Generator)
     # Code used from: github.com/Watchful1/PushshiftDumps
@@ -26,16 +26,17 @@ class ZstandardHandler():
             reader = zstandard.ZstdDecompressor(max_window_size=2**31).stream_reader(file_handle)
             total_waits = 0
             while True:
-                torrent_info = self.torrent_handler.get_file_info(inner_torrent_path)
+                torrent_info = self.t_info_storage.get_torrent_info(inner_torrent_path)
                 # Progress is 0 to 1 representing how much of the file is downloaded, size is total size in bytes
                 downloaded_total = torrent_info['progress'] *  torrent_info['size']
                 
+                # Change Multiplier to 2 if breaking?
                 downloaded_total_needed = file_handle.tell() + ((2**27) * 2) 
 
                 if ( downloaded_total_needed > downloaded_total and torrent_info['progress'] != 1):
                     logging.info(f"Waiting for more of {file_path} to download ({downloaded_total}/{downloaded_total_needed})")
                     total_waits += 1
-                    time.sleep(0.1 * total_waits)
+                    time.sleep(2)
                 else:
                     logging.info(f"Reading a chunk of {file_path}")
                     total_waits = 0
