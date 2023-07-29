@@ -3,6 +3,7 @@ from TorrentThread import TorrentThread
 from ZstandardThread import ZstandardThread
 from ZtstandardHandler import ZstandardHandler
 from TorrentInfoStorage import TorrentInfoStorage
+from AnalysisThread import FilterThread
 from queue import Queue
 import time
 import logging
@@ -36,6 +37,7 @@ def generate_file_paths_by_date(start_date, end_date):
       
       return torrent_file_paths
 
+#TODO: MOVE TO TorrentInfoStorage?
 def wait_for_torrent_info(t_info_storage):
       while t_info_storage.get_has_init() == False:
             print("Waiting for torrent info")
@@ -64,14 +66,22 @@ if __name__ == '__main__':
 
       #TODO: IMPLEMENT "QUEUE" WHICH PRIORITISES FILES WHICH ARE MORE DOWNLOADED
       zstd_job_queue = Queue(0)
+      filter_job_queue = Queue(0)
+      write_job_queues = {}
+
       for file in torrent_file_paths:
             zstd_job_queue.put(file)
-
-      zstd_thread_amount = 3
+            write_job_queues[file] = Queue(0)
+            
+      zstd_thread_amount = 5
       zstd_threads = []
       for n in range(zstd_thread_amount):
-            zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, save_folder_path, t_info_storage,)))
+            zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage,)))
             zstd_threads[n].start()
+
+      filter_kwargs = {"subreddits":["funny", "worldpolitics"]}
+      filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue,), kwargs=filter_kwargs)
+      filter_thread.start()
 
       script_end = datetime.now()
       total_time = script_end - script_start
