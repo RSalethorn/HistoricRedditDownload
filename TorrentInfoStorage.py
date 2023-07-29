@@ -16,10 +16,16 @@ class TorrentInfoStorage:
         with self.resource_lock:
             try:
                 #print(f"TIS: {self.torrent_info[file_name]}")
-                return self.torrent_info[file_name]
+                # TODO: GET STRING TO FORMAT WITHOUT DOUBLE BACKSLASH AS FOLDER SEPERATORS
+                formatted_file_name = file_name.replace("\\", "/")
+                return self.torrent_info[formatted_file_name]
             except KeyError as e:
                 #print(f"TIS: EMPTY \n {e}")
                 return {}
+    
+    def get_all_info(self):
+        with self.resource_lock:
+            return self.torrent_info
             
     def get_has_init(self):
         with self.resource_lock:

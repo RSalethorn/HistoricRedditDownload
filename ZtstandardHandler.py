@@ -12,16 +12,18 @@ class ZstandardHandler():
     
     # Function decompresses file_path and returns line by line (Generator)
     # Code used from: github.com/Watchful1/PushshiftDumps
-    def read_file(self, file_path, inner_torrent_path):
+    def read_file(self, inner_torrent_path, save_folder_path):
+        file_save_path = save_folder_path + inner_torrent_path
+        
         file_exists = False
         while file_exists == False:
-            print(f"Waiting for {file_path} to exist")
-            if os.path.exists(file_path) == True:
+            print(f"Waiting for {file_save_path} to exist")
+            if os.path.exists(file_save_path) == True:
                 file_exists = True
-                print(f"The file ({file_path}) has been found")
+                print(f"The file ({file_save_path}) has been found")
             time.sleep(0.5)
 
-        with open(file_path, 'rb') as file_handle:
+        with open(file_save_path, 'rb') as file_handle:
             buffer = ''
             reader = zstandard.ZstdDecompressor(max_window_size=2**31).stream_reader(file_handle)
             total_waits = 0
@@ -34,11 +36,11 @@ class ZstandardHandler():
                 downloaded_total_needed = file_handle.tell() + ((2**27) * 2) 
 
                 if ( downloaded_total_needed > downloaded_total and torrent_info['progress'] != 1):
-                    logging.info(f"Waiting for more of {file_path} to download ({downloaded_total}/{downloaded_total_needed})")
+                    logging.info(f"Waiting for more of {file_save_path} to download ({downloaded_total}/{downloaded_total_needed})")
                     total_waits += 1
                     time.sleep(2)
                 else:
-                    logging.info(f"Reading a chunk of {file_path}")
+                    logging.info(f"Reading a chunk of {file_save_path}")
                     total_waits = 0
 
                     chunk = self.read_and_decode(reader, 
