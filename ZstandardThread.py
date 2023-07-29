@@ -24,6 +24,7 @@ class ZstandardThread(threading.Thread):
             progress_info_byte_interval = current_file_size / progress_info_percentage
 
             for content, file_bytes_processed in zstd_handler.read_file(file_path, save_folder_path):
+                    content["file"] = file_path
                     filter_job_queue.put(content)
                     if file_bytes_processed >= progress_info_byte_interval:
                         percentage = (file_bytes_processed / current_file_size) * 100

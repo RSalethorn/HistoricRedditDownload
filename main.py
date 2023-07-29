@@ -80,7 +80,7 @@ if __name__ == '__main__':
             zstd_threads[n].start()
 
       filter_kwargs = {"subreddits":["funny", "worldpolitics"]}
-      filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue,), kwargs=filter_kwargs)
+      filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue, write_job_queues,), kwargs=filter_kwargs)
       filter_thread.start()
 
       script_end = datetime.now()
@@ -88,29 +88,3 @@ if __name__ == '__main__':
 
       #average_rspeed = total_file_size / total_time.total_seconds()
       logging.info(f"Script finished in {total_time}")#, average speed was {average_rspeed} b/sec")
-
-
-'''      total_file_size = 0
-
-      for torrent_file_path in torrent_file_paths:
-
-            current_file_path = save_folder_path + torrent_file_path
-
-            current_file_size = t_info_storage.get_torrent_info(torrent_file_path).size
-            total_file_size += current_file_size
-
-            progress_info_byte_interval = current_file_size / progress_info_percentage
-
-            for content, file_bytes_processed in zstd_handler.read_file(torrent_file_path, save_folder_path):
-                  if file_bytes_processed >= progress_info_byte_interval:
-                        percentage = (file_bytes_processed / total_file_size) * 100
-                        logging.info(f"{percentage}% of {torrent_file_path} processed\n\
-                                    Example of Content: {content}")
-                        progress_info_byte_interval += total_file_size / progress_info_percentage
-                        #print(f"RC r/{content['subreddit']} - {content['author']} - {content['body']}")'''
-
-
-
-
-
-      

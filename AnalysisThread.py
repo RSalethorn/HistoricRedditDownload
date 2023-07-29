@@ -1,6 +1,6 @@
 import threading
 class FilterThread(threading.Thread):
-    def __init__(self, filter_job_queue, subreddits=[], authors=[]):
+    def __init__(self, filter_job_queue, write_job_queue, subreddits=[], authors=[]):
         print(f"SUB FILTER: {subreddits}")
         subreddits_filter = False
         if len(subreddits) > 0:
@@ -19,11 +19,15 @@ class FilterThread(threading.Thread):
                 continue
 
             if "title" in content:
-                content_type = "submissions"
+                content["type"] = "submissions"
             else:
-                content_type = "comments"
+                content["type"] = "comments"
             
-            print(f"Filter Success: {content}")
+            self.add_content_to_queue(content, write_job_queue)
+
+    def add_content_to_queue(self, content, write_queues):
+        file_path = write_queues.pop("file")
+        write_queues[file_path].put(content)
 
             
             
