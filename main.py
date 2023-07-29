@@ -29,7 +29,7 @@ def generate_file_paths_by_date(start_date, end_date):
       while current_file_date <= end_date:
             for content_type in content_types:
                   file_type_prefix = content_type[0].upper()
-                  inner_torrent_path = f"reddit\\{content_type}\\R{file_type_prefix}_{current_file_date.strftime('%Y-%m')}.zst" 
+                  inner_torrent_path = f"reddit/{content_type}/R{file_type_prefix}_{current_file_date.strftime('%Y-%m')}.zst" 
                   torrent_file_paths.append(inner_torrent_path)
 
             current_file_date = increase_date_by_month(current_file_date)
@@ -44,10 +44,10 @@ def wait_for_torrent_info(t_info_storage):
 
 
 if __name__ == '__main__':
-      save_folder_path = '.\\Saved\\'
+      save_folder_path = './Saved/'
 
-      start_date = datetime(2012, 9, 1)
-      end_date = datetime(2012, 9, 1)
+      start_date = datetime(2009, 9, 1)
+      end_date = datetime(2010, 9, 1)
 
       torrent_file_paths = generate_file_paths_by_date(start_date, end_date)
 
@@ -59,8 +59,6 @@ if __name__ == '__main__':
       wait_for_torrent_info(t_info_storage)
 
       #zstd_handler = ZstandardHandler(t_info_storage)
-      # Every X% through unzipping a file the program will inform you of progress
-      progress_info_percentage = 5
 
       script_start = datetime.now()
 
@@ -69,10 +67,11 @@ if __name__ == '__main__':
       for file in torrent_file_paths:
             zstd_job_queue.put(file)
 
-      test_file_path = "reddit\\comments\\RC_2012-09.zst"
-
-      zstd_handler = threading.Thread(target=ZstandardThread, args=(test_file_path, save_folder_path, t_info_storage))
-      zstd_handler.start()
+      zstd_thread_amount = 3
+      zstd_threads = []
+      for n in range(zstd_thread_amount):
+            zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, save_folder_path, t_info_storage,)))
+            zstd_threads[n].start()
 
       script_end = datetime.now()
       total_time = script_end - script_start

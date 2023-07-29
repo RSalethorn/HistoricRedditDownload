@@ -20,8 +20,8 @@ class TorrentThread(threading.Thread):
         # Define directorys to place downloading and downloaded torrents
         current_directory = os.path.dirname(os.path.abspath(__file__))
         
-        download_location = current_directory + "\\Saved\\"
-        saved_location = current_directory + "\\Saved\\"
+        download_location = current_directory + "/Saved/"
+        saved_location = current_directory + "/Saved/"
 
         qb = self.connect()
 
