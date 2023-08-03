@@ -1,13 +1,14 @@
 from datetime import datetime
 from TorrentThread import TorrentThread
 from ZstandardThread import ZstandardThread
-from ZtstandardHandler import ZstandardHandler
 from TorrentInfoStorage import TorrentInfoStorage
-from AnalysisThread import FilterThread
+from FilterThread import FilterThread
+from CSVWriteThread import CSVWriteThread
 from queue import Queue
 import time
 import logging
 import threading
+from FieldTypes import SubFields, ComFields
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 logging.info("Script started")
@@ -46,10 +47,14 @@ def wait_for_torrent_info(t_info_storage):
 
 
 if __name__ == '__main__':
+      #TODO: CREATE SAVE FOLDER IF NOT ALREADY THEIR (OS.MAKEDIR)
       save_folder_path = './Saved/'
 
       start_date = datetime(2009, 9, 1)
       end_date = datetime(2010, 9, 1)
+
+      sub_filter_types = SubFields()
+      com_filter_types = ComFields()
 
       torrent_file_paths = generate_file_paths_by_date(start_date, end_date)
 
@@ -79,9 +84,28 @@ if __name__ == '__main__':
             zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage,)))
             zstd_threads[n].start()
 
-      filter_kwargs = {"subreddits":["funny", "worldpolitics"]}
+      filter_kwargs = {"subreddits":["unitedkingdom",],
+                       "submission_fields":[
+                             sub_filter_types.CREATED_UTC,
+                             sub_filter_types.AUTHOR,
+                             sub_filter_types.TITLE,
+                             sub_filter_types.SELFTEXT,
+                             sub_filter_types.SCORE
+                       ],
+                       "comment_fields":[
+                             com_filter_types.CREATED_UTC,
+                             sub_filter_types.AUTHOR,
+                             com_filter_types.BODY,
+                             com_filter_types.SCORE
+                       ]}
       filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue, write_job_queues,), kwargs=filter_kwargs)
       filter_thread.start()
+
+      write_threads = {}
+
+      for file in torrent_file_paths:
+            write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file],))
+            write_threads[file].start()
 
       script_end = datetime.now()
       total_time = script_end - script_start

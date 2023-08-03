@@ -40,7 +40,7 @@ class ZstandardHandler():
                     total_waits += 1
                     time.sleep(2)
                 else:
-                    logging.info(f"Reading a chunk of {file_save_path}")
+                    #logging.info(f"Reading a chunk of {file_save_path}")
                     total_waits = 0
 
                     chunk = self.read_and_decode(reader, 
