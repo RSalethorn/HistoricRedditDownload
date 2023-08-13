@@ -51,7 +51,7 @@ class FilterThread(threading.Thread):
                 content["type"] = "comments"
                 for field in comment_fields:
                     #TODO: MOVE REMOVING NEW LINES TO WriteThreads
-                    if (field == 'body'):
+                    if (field == 'body' and "\n" in content[field]):
                         content[field] = content[field].replace("\n", "")
                     write_content[field] = content.get(field)
             

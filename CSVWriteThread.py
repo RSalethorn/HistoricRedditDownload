@@ -24,7 +24,7 @@ class CSVWriteThread(threading.Thread):
             json_content_line = self.json_to_csv(content_line)
             line_buffer.append(json_content_line)
             if (len(line_buffer) >= LINE_BUFFER_AMOUNT):
-                print(f"WRITING TO {file_path}, WRITE EXAMPLE: {line_buffer[-1]}")
+                print(f"WRITING TO {file_path}")
                 writer.writerows(line_buffer)
                 csv_file.flush()
                 line_buffer.clear()
