@@ -17,7 +17,7 @@ class CSVWriteThread(threading.Thread):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         csv_file = open(file_path, 'w+', newline='', encoding='utf-8')
-        writer = csv.writer(csv_file, delimiter=',', quotechar='"')
+        writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         line_buffer = []
         while True:
             content_line = write_job_queue.get()
@@ -32,5 +32,15 @@ class CSVWriteThread(threading.Thread):
     def json_to_csv(self, json_content):
         csv_content = []
         for key in json_content:
-            csv_content.append(json_content[key])
+            content_attribute = json_content[key]
+
+            if isinstance(content_attribute, str):
+                # Remove new lines
+                content_attribute = content_attribute.replace("\n", "")
+                content_attribute = content_attribute.replace("\r", "")
+
+                # Change double quotes to single quotes
+                content_attribute = content_attribute.replace("\"", "\'")
+
+            csv_content.append(content_attribute)
         return csv_content

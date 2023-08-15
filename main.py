@@ -50,8 +50,8 @@ if __name__ == '__main__':
       #TODO: CREATE SAVE FOLDER IF NOT ALREADY THEIR (OS.MAKEDIR)
       save_folder_path = './Saved/'
 
-      start_date = datetime(2019, 9, 1)
-      end_date = datetime(2019, 9, 1)
+      start_date = datetime(2009, 9, 1)
+      end_date = datetime(2010, 9, 1)
 
       sub_filter_types = SubFields()
       com_filter_types = ComFields()

@@ -41,18 +41,12 @@ class FilterThread(threading.Thread):
                 content["type"] = "submissions"
                 # Go through each field user has given to write to file
                 for field in submission_fields:
-                    #TODO: MOVE REMOVING NEW LINES TO WriteThreads
-                    if (field == 'selftext' or field == 'title'):
-                        content[field] = content[field].replace("\n", "")
                     write_content[field] = content.get(field)
             else:
                 #self.check_for_new_attributes(content, com_attributes_found, "submission")
 
                 content["type"] = "comments"
                 for field in comment_fields:
-                    #TODO: MOVE REMOVING NEW LINES TO WriteThreads
-                    if (field == 'body'):
-                        content[field] = content[field].replace("\n", "")
                     write_content[field] = content.get(field)
             
 
