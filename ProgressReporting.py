@@ -32,7 +32,7 @@ class ProgressInfo:
             self.progress_info.decompress.content_checked += content_checked
 
     def add_filter_valid_content(self, valid_content):
-        with self.progress_info_locks.decompress.valid_content
+        with self.progress_info_locks.decompress.valid_content:
             self.progress_info.decompress.valid_content += valid_content
 
     def add_write_content_written(self, content_written):
