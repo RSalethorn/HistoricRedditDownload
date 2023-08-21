@@ -1,8 +1,20 @@
 import threading
+import logging
+import time
 
 class ProgressReporterThread(threading.Thread):
     def __init__(self, progress_info):
-        pass
+        logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+        logging.info("ProgressReporterThread started")
+        while True:
+            progress = progress_info.get_all_info()
+            logging.info(f'''
+                         (DECOMPRESS) {progress.decompress.bytes_complete} / {progress.decompress.total_bytes} bytes complete, {progress.decompress.content_found} content found.\n
+                         (FILTER) {progress.filter.content_checked} / {progress.decompress.content_found} content checked, {progress.filter.valid_content} valid content found.
+                         (WRITE) {progress.write.content_written} / {progress.filter.valid_content} content written to disk.
+                        ''')
+            time.sleep(20)
+            
 
 class ProgressInfo:
     def __init__(self, torrent_info):

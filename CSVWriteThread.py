@@ -1,6 +1,7 @@
 import threading
 import csv
 import os
+import logging
 
 class CSVWriteThread(threading.Thread):
     def __init__(self, file_path, write_job_queue):
@@ -19,6 +20,7 @@ class CSVWriteThread(threading.Thread):
         csv_file = open(file_path, 'w+', newline='', encoding='utf-8')
         writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         line_buffer = []
+        logging.info(f"CSV Write Thread Started on {file_path}")
         while True:
             content_line = write_job_queue.get()
             json_content_line = self.json_to_csv(content_line)

@@ -31,7 +31,7 @@ def generate_file_paths_by_date(start_date, end_date):
       while current_file_date <= end_date:
             for content_type in content_types:
                   file_type_prefix = content_type[0].upper()
-                  inner_torrent_path = f"reddit/{content_type}/R{file_type_prefix}_{current_file_date.strftime('%Y-%m')}.zst" 
+                  inner_torrent_path = f"reddit/{content_type}/R{file_type_prefix}_{current_file_date.strftime('%Y-%m')}.zst"
                   torrent_file_paths.append(inner_torrent_path)
 
             current_file_date = increase_date_by_month(current_file_date)
@@ -50,8 +50,8 @@ if __name__ == '__main__':
       #TODO: CREATE SAVE FOLDER IF NOT ALREADY THEIR (OS.MAKEDIR)
       save_folder_path = './Saved/'
 
-      start_date = datetime(2009, 9, 1)
-      end_date = datetime(2010, 9, 1)
+      start_date = datetime(2019, 9, 1)
+      end_date = datetime(2019, 9, 1)
 
       sub_filter_types = SubFields()
       com_filter_types = ComFields()
@@ -90,6 +90,7 @@ if __name__ == '__main__':
                              sub_filter_types.AUTHOR,
                              sub_filter_types.TITLE,
                              sub_filter_types.SELFTEXT,
+                             "body",
                              sub_filter_types.SCORE
                        ],
                        "comment_fields":[
@@ -106,7 +107,9 @@ if __name__ == '__main__':
       for file in torrent_file_paths:
             write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file],))
             write_threads[file].start()
-
+      
+      for file in torrent_file_paths:
+            write_threads[file].join()
       script_end = datetime.now()
       total_time = script_end - script_start
 
