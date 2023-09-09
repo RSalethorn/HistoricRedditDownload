@@ -4,6 +4,7 @@ from ZstandardThread import ZstandardThread
 from TorrentInfoStorage import TorrentInfoStorage
 from FilterThread import FilterThread
 from CSVWriteThread import CSVWriteThread
+from ProgressReporting import ProgressInfo
 from queue import Queue
 import time
 import logging
@@ -59,6 +60,7 @@ if __name__ == '__main__':
       torrent_file_paths = generate_file_paths_by_date(start_date, end_date)
 
       t_info_storage = TorrentInfoStorage()
+      progress_info = ProgressInfo()
 
       t_handler = threading.Thread(target=TorrentThread, args=(torrent_file_paths, t_info_storage,))
       t_handler.start()
@@ -81,7 +83,7 @@ if __name__ == '__main__':
       zstd_thread_amount = 5
       zstd_threads = []
       for n in range(zstd_thread_amount):
-            zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage,)))
+            zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage, progress_info,)))
             zstd_threads[n].start()
 
       filter_kwargs = {"subreddits":["unitedkingdom",],
@@ -99,19 +101,23 @@ if __name__ == '__main__':
                              com_filter_types.BODY,
                              com_filter_types.SCORE
                        ]}
-      filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue, write_job_queues,), kwargs=filter_kwargs)
+      filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue, write_job_queues, progress_info,), kwargs=filter_kwargs)
       filter_thread.start()
 
       write_threads = {}
 
       for file in torrent_file_paths:
-            write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file],))
+            write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file], progress_info))
             write_threads[file].start()
       
-      for file in torrent_file_paths:
-            write_threads[file].join()
+      #for file in torrent_file_paths:
+      #     write_threads[file].join()
       script_end = datetime.now()
       total_time = script_end - script_start
+      while True:
+            print(progress_info.get_progress_overview())
+            time.sleep(5)
+
 
       #average_rspeed = total_file_size / total_time.total_seconds()
       logging.info(f"Script finished in {total_time}")#, average speed was {average_rspeed} b/sec")

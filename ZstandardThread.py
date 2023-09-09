@@ -2,12 +2,13 @@ import threading
 from ZtstandardHandler import ZstandardHandler
 import logging
 import time
+import os.path
 from MemoryHandler import MemoryHandler
 
 class ZstandardThread(threading.Thread):
     # file_path is the path to the zst file to be unzipped
     # t_info_storage is storage class for torrent file info
-    def __init__(self, zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage):
+    def __init__(self, zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage, progress_info):
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
         logging.info("Script started")
 
@@ -18,6 +19,11 @@ class ZstandardThread(threading.Thread):
 
             file_path = zstd_job_queue.get()
 
+            progress_info.init_decompress_file(file_path)
+
+            file_size = os.path.getsize(save_folder_path + file_path)
+            progress_info.set_decompress_total_bytes(file_path, file_size)
+
             zstd_handler = ZstandardHandler(t_info_storage)
             mem_handler = MemoryHandler()
 
@@ -27,6 +33,8 @@ class ZstandardThread(threading.Thread):
 
             for content, file_bytes_processed in zstd_handler.read_file(file_path, save_folder_path):
                     self.wait_for_free_memory(mem_handler)
+                    progress_info.set_decompress_bytes_complete(file_path, file_bytes_processed)
+                    progress_info.add_decompress_content_found(file_path, 1)
                     content["file"] = file_path
                     filter_job_queue.put(content)
                     if file_bytes_processed >= progress_info_byte_interval: 

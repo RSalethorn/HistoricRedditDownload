@@ -17,7 +17,7 @@ class ProgressReporterThread():
             
 
 class ProgressInfo:
-    def __init__(self, torrent_info):
+    def __init__(self):#, torrent_info):
         # Holds all progress info
         self.progress_info = dict()
         # Holds a dictionary for each decompress thread that stores the progress for each file

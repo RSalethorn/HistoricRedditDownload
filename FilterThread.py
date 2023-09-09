@@ -2,7 +2,7 @@ import threading
 from FieldTypes import SubFields, ComFields
 
 class FilterThread(threading.Thread):
-    def __init__(self, filter_job_queue, write_job_queue, subreddits=[], authors=[], submission_fields=[], comment_fields=[]):
+    def __init__(self, filter_job_queue, write_job_queue, progress_info, subreddits=[], authors=[], submission_fields=[], comment_fields=[]):
         print(f"SUB FILTER: {subreddits}")
         subreddits_filter = False
         if len(subreddits) > 0:
@@ -27,6 +27,7 @@ class FilterThread(threading.Thread):
 
         while True:
             content = filter_job_queue.get()
+            progress_info.add_filter_content_checked(1)
             if subreddits_filter and content["subreddit"] not in subreddits:
                 continue
             
@@ -52,6 +53,10 @@ class FilterThread(threading.Thread):
 
             original_file_name = content["file"]
             write_job_queue[original_file_name].put(write_content)
+
+            progress_info.add_filter_valid_content(1)
+
+
 
     def check_for_new_attributes(self, content, attribute_list, type):
         for key in content:
