@@ -42,7 +42,7 @@ class ZstandardThread(threading.Thread):
                         logging.info(f"{percentage}% of {file_path} processed")
                                     #\nExample of Content: {content}")
                         progress_info_byte_interval += current_file_size / progress_info_percentage
-
+        progress_info.set_decompress_thread_status(file_path, False)
         logging.info("ZstandardThread finished.")
 
     def wait_for_torrent_info(self, t_info_storage):
