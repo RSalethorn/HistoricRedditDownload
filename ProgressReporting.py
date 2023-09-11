@@ -56,7 +56,7 @@ class ProgressInfo:
         self.progress_info_locks["decompress"][file_name] = dict(total_bytes = threading.Lock(), bytes_decompressed = threading.Lock(), content_found = threading.Lock())
 
         self.thread_status["decompress"][file_name] = True
-        self.thread_status_locks["decompress"][file_name] = True
+        self.thread_status_locks["decompress"][file_name] = threading.Lock()
 
     # Set the amount of total bytes contained within a uncompressed file.
     def set_decompress_total_bytes(self, file_name, total):
@@ -77,9 +77,12 @@ class ProgressInfo:
         with self.thread_status_locks["decompress"][file_name]:
             self.thread_status_locks["decompress"][file_name] = bool_value
 
-    def get_decompress_thread_status(self, file_name):
-        with self.thread_status_locks["decompress"][file_name]:
-            return self.thread_status_locks["decompress"][file_name]
+    def get_decompress_threads_status(self):
+        for file_name in self.thread_status_locks["decompress"]:
+            with self.thread_status_locks["decompress"][file_name]:
+                if not self.thread_status_locks["decompress"][file_name]:
+                    return False
+        return True
 
 
     # FILTER FUNCTIONS
@@ -127,8 +130,6 @@ class ProgressInfo:
         progress_overview["filter"] = dict()
         progress_overview["filter"]["content_checked"] = self.progress_info["filter"]["content_checked"]
         progress_overview["filter"]["valid_content"] = self.progress_info["filter"]["valid_content"]
-
-        progress_overview["decompress_threads"] = 
 
 
         # Sum together progress stats of each file being written

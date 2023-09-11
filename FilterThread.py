@@ -1,4 +1,5 @@
 import threading
+from queue import Queue, Empty
 from FieldTypes import SubFields, ComFields
 
 class FilterThread(threading.Thread):
@@ -25,8 +26,12 @@ class FilterThread(threading.Thread):
         sub_attributes_found = []
         com_attributes_found = []
 
-        while True:
-            content = filter_job_queue.get()
+        while filter_job_queue.empty() == False or progress_info.get_decompress_threads_status() == True:
+            try:
+                content = filter_job_queue.get(timeout=10)
+            except Empty:
+                continue
+
             progress_info.add_filter_content_checked(1)
             if subreddits_filter and content["subreddit"] not in subreddits:
                 continue
@@ -55,6 +60,7 @@ class FilterThread(threading.Thread):
             write_job_queue[original_file_name].put(write_content)
 
             progress_info.add_filter_valid_content(1)
+        print("Filter thread complete")
 
 
 
