@@ -28,7 +28,7 @@ class FilterThread(threading.Thread):
 
         while filter_job_queue.empty() == False or progress_info.get_decompress_threads_status() == True:
             try:
-                content = filter_job_queue.get(timeout=10)
+                content = filter_job_queue.get(timeout=5)
             except Empty:
                 continue
 
