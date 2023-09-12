@@ -52,7 +52,7 @@ if __name__ == '__main__':
       save_folder_path = './Saved/'
 
       start_date = datetime(2009, 9, 1)
-      end_date = datetime(2010, 9, 1)
+      end_date = datetime(2009, 9, 2)
 
       sub_filter_types = SubFields()
       com_filter_types = ComFields()

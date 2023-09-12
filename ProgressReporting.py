@@ -73,16 +73,18 @@ class ProgressInfo:
         with self.progress_info_locks["decompress"][file_name]["content_found"]:
             self.progress_info["decompress"][file_name]["content_found"] += content_found
 
+    #TODO: Refactor function and variable names with decompress_thread in to more accurately describe it handling decompress_files_status
     def set_decompress_thread_status(self, file_name, bool_value):
         with self.thread_status_locks["decompress"][file_name]:
-            self.thread_status_locks["decompress"][file_name] = bool_value
+            self.thread_status["decompress"][file_name] = bool_value
 
+    # If any decomp threads are running return true, if all decomp threads finished returns false
     def get_decompress_threads_status(self):
         for file_name in self.thread_status_locks["decompress"]:
             with self.thread_status_locks["decompress"][file_name]:
-                if not self.thread_status_locks["decompress"][file_name]:
-                    return False
-        return True
+                if self.thread_status["decompress"][file_name] == True:
+                    return True
+        return False
 
 
     # FILTER FUNCTIONS
@@ -97,6 +99,14 @@ class ProgressInfo:
         with self.progress_info_locks["filter"]["valid_content"]:
             self.progress_info["filter"]["valid_content"] += valid_content
     
+    def get_filter_threads_status(self):
+        with self.thread_status_locks["filter"]:
+            return self.thread_status["filter"]
+        
+    def set_filter_threads_status(self, bool_value):
+        with self.thread_status_locks["filter"]:
+            self.thread_status["filter"] = bool_value
+
     # WRITE FUNCTIONS
 
     # Sets write progress dictionaries and locks up for 'file_name'

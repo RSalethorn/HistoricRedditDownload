@@ -60,6 +60,7 @@ class FilterThread(threading.Thread):
             write_job_queue[original_file_name].put(write_content)
 
             progress_info.add_filter_valid_content(1)
+        progress_info.set_filter_threads_status(False)
         print("Filter thread complete")
 
 
