@@ -41,8 +41,10 @@ def generate_file_paths_by_date(start_date, end_date):
 
 #TODO: MOVE TO TorrentInfoStorage?
 def wait_for_torrent_info(t_info_storage):
+      no_of_waits = 0
       while t_info_storage.get_has_init() == False:
-            print("Waiting for torrent info")
+            no_of_waits += 1
+            print(f"\r(QBitTorrent) Waiting for torrent info ({no_of_waits})", end="")
             time.sleep(1)
             
 
@@ -52,7 +54,7 @@ if __name__ == '__main__':
       save_folder_path = './Saved/'
 
       start_date = datetime(2009, 9, 1)
-      end_date = datetime(2009, 9, 2)
+      end_date = datetime(2010, 9, 1)
 
       sub_filter_types = SubFields()
       com_filter_types = ComFields()
@@ -110,12 +112,30 @@ if __name__ == '__main__':
             write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file], progress_info))
             write_threads[file].start()
       
-      #for file in torrent_file_paths:
-      #     write_threads[file].join()
       script_end = datetime.now()
       total_time = script_end - script_start
       while True:
-            print(progress_info.get_progress_overview())
+            print("===-----[ NEW UPDATE ]-----===")
+            current_progress = progress_info.get_progress_overview()
+
+            decomp_total_mb = round(current_progress["decompress"]["total_bytes"] / 1024 / 1024, 0)
+            decomp_progress_mb = round(current_progress["decompress"]["bytes_decompressed"] / 1024 / 1024, 0)
+            try:
+                  decomp_percentage = current_progress["decompress"]["bytes_decompressed"] / current_progress["decompress"]["total_bytes"] * 100
+            except ZeroDivisionError:
+                  decomp_percentage = 0
+            
+            print(f"(DECOMPRESS) {decomp_progress_mb}/{decomp_total_mb} mb decompressed ({round(decomp_percentage, 2)}%)")
+            try:
+                  filter_percentage = current_progress['filter']['content_checked'] / current_progress['decompress']['content_found'] * 100
+            except ZeroDivisionError:
+                  filter_percentage = 0
+            print(f"(FILTER) {current_progress['filter']['content_checked']}/{current_progress['decompress']['content_found']} content found been filtered ({round(filter_percentage, 2)}%)")
+            try:
+                  write_percentage = current_progress['write']['content_written'] / current_progress['filter']['valid_content'] * 100
+            except ZeroDivisionError:
+                  write_percentage = 0
+            print(f"(WRITE) {current_progress['write']['content_written']}/{current_progress['filter']['valid_content']} succesfully filtered content been written to file ({round(write_percentage, 2)}%)")
             time.sleep(5)
 
 

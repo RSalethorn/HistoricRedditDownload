@@ -23,7 +23,7 @@ class CSVWriteThread(threading.Thread):
         csv_file = open(file_path, 'w+', newline='', encoding='utf-8')
         writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         line_buffer = []
-        logging.info(f"CSV Write Thread Started on {file_path}")
+        #logging.info(f"CSV Write Thread Started on {file_path}")
         while not write_job_queue.empty() or progress_info.get_filter_threads_status() == True:
             try:
                 content_line = write_job_queue.get(timeout=5)

@@ -4,7 +4,6 @@ from FieldTypes import SubFields, ComFields
 
 class FilterThread(threading.Thread):
     def __init__(self, filter_job_queue, write_job_queue, progress_info, subreddits=[], authors=[], submission_fields=[], comment_fields=[]):
-        print(f"SUB FILTER: {subreddits}")
         subreddits_filter = False
         if len(subreddits) > 0:
             subreddits_filter = True

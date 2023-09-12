@@ -17,10 +17,10 @@ class ZstandardHandler():
         
         file_exists = False
         while file_exists == False:
-            print(f"Waiting for {file_save_path} to exist")
+            #print(f"Waiting for {file_save_path} to exist")
             if os.path.exists(file_save_path) == True:
                 file_exists = True
-                print(f"The file ({file_save_path}) has been found")
+                #print(f"The file ({file_save_path}) has been found")
             time.sleep(0.5)
 
         with open(file_save_path, 'rb') as file_handle:
@@ -36,7 +36,7 @@ class ZstandardHandler():
                 downloaded_total_needed = file_handle.tell() + ((2**27) * 2) 
 
                 if ( downloaded_total_needed > downloaded_total and torrent_info['progress'] != 1):
-                    logging.info(f"Waiting for more of {file_save_path} to download ({downloaded_total}/{downloaded_total_needed})")
+                    #logging.info(f"Waiting for more of {file_save_path} to download ({downloaded_total}/{downloaded_total_needed})")
                     total_waits += 1
                     time.sleep(2)
                 else:
@@ -72,7 +72,7 @@ class ZstandardHandler():
         try:
             chunk = reader.read(chunk_size)
         except zstandard.ZstdError as e:
-            print("Error happened")
+            logging.info("Error happened")
         bytes_read += chunk_size
         if previous_chunk is not None:
             chunk = previous_chunk + chunk

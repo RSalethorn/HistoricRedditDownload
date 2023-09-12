@@ -95,4 +95,4 @@ class TorrentThread(threading.Thread):
                 else:
                     qb.torrents_file_priority(torrent_hash, file.id, 0)
 
-        logging.info(f"The following files have been chosen as needed for your required search: \n{file_names}")
+        logging.info(f"\nThe following files have been chosen as needed for your required search: \n{file_names}")
