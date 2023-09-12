@@ -19,10 +19,10 @@ class ZstandardThread(threading.Thread):
 
             file_path = zstd_job_queue.get()
 
-            progress_info.init_decompress_file(file_path)
+            #progress_info.init_decompress_file(file_path)
 
-            file_size = os.path.getsize(save_folder_path + file_path)
-            progress_info.set_decompress_total_bytes(file_path, file_size)
+            #file_size = os.path.getsize(save_folder_path + file_path)
+            #progress_info.set_decompress_total_bytes(file_path, file_size)
 
             zstd_handler = ZstandardHandler(t_info_storage)
             mem_handler = MemoryHandler()

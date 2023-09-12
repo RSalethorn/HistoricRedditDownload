@@ -9,6 +9,7 @@ from queue import Queue
 import time
 import logging
 import threading
+import os
 from FieldTypes import SubFields, ComFields
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -39,86 +40,32 @@ def generate_file_paths_by_date(start_date, end_date):
       
       return torrent_file_paths
 
-#TODO: MOVE TO TorrentInfoStorage?
+#TODO: MOVE TO TorrentInfoStorage
 def wait_for_torrent_info(t_info_storage):
       no_of_waits = 0
       while t_info_storage.get_has_init() == False:
             no_of_waits += 1
             print(f"\r(QBitTorrent) Waiting for torrent info ({no_of_waits})", end="")
             time.sleep(1)
-            
 
-
-if __name__ == '__main__':
-      #TODO: CREATE SAVE FOLDER IF NOT ALREADY THEIR (OS.MAKEDIR)
-      save_folder_path = './Saved/'
-
-      start_date = datetime(2009, 9, 1)
-      end_date = datetime(2010, 9, 1)
-
-      sub_filter_types = SubFields()
-      com_filter_types = ComFields()
-
-      torrent_file_paths = generate_file_paths_by_date(start_date, end_date)
-
-      t_info_storage = TorrentInfoStorage()
-      progress_info = ProgressInfo()
-
-      t_handler = threading.Thread(target=TorrentThread, args=(torrent_file_paths, t_info_storage,))
-      t_handler.start()
-
-      wait_for_torrent_info(t_info_storage)
-
-      #zstd_handler = ZstandardHandler(t_info_storage)
-
-      script_start = datetime.now()
-
-      #TODO: IMPLEMENT "QUEUE" WHICH PRIORITISES FILES WHICH ARE MORE DOWNLOADED
-      zstd_job_queue = Queue(0)
-      filter_job_queue = Queue(0)
-      write_job_queues = {}
-
-      for file in torrent_file_paths:
-            zstd_job_queue.put(file)
-            write_job_queues[file] = Queue(0)
-            
-      zstd_thread_amount = 5
-      zstd_threads = []
-      for n in range(zstd_thread_amount):
-            zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage, progress_info,)))
-            zstd_threads[n].start()
-
-      filter_kwargs = {"subreddits":["unitedkingdom",],
-                       "submission_fields":[
-                             sub_filter_types.CREATED_UTC,
-                             sub_filter_types.AUTHOR,
-                             sub_filter_types.TITLE,
-                             sub_filter_types.SELFTEXT,
-                             "body",
-                             sub_filter_types.SCORE
-                       ],
-                       "comment_fields":[
-                             com_filter_types.CREATED_UTC,
-                             sub_filter_types.AUTHOR,
-                             com_filter_types.BODY,
-                             com_filter_types.SCORE
-                       ]}
-      filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue, write_job_queues, progress_info,), kwargs=filter_kwargs)
-      filter_thread.start()
-
-      write_threads = {}
-
-      for file in torrent_file_paths:
-            write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file], progress_info))
-            write_threads[file].start()
-      
-      script_end = datetime.now()
-      total_time = script_end - script_start
+def report_progress(progress_info, t_info_storage, torrent_file_paths):
       while True:
             print("===-----[ NEW UPDATE ]-----===")
             current_progress = progress_info.get_progress_overview()
+            if current_progress['write']['content_written'] == current_progress['filter']['valid_content'] and not progress_info.get_filter_threads_status():
+                  break
+            
 
             decomp_total_mb = round(current_progress["decompress"]["total_bytes"] / 1024 / 1024, 0)
+            
+            downloaded_total = 0
+            for file in torrent_file_paths:
+                  file_info = t_info_storage.get_torrent_info(file)
+                  downloaded_total += file_info["size"] * file_info["progress"]
+            downloaded_total = round(downloaded_total / 1024 / 1024, 2)
+            downloaded_percentage = round(downloaded_total/decomp_total_mb*100, 2)
+
+            print(f"(DOWNLOAD) {downloaded_total}/{decomp_total_mb} mb downloaded ({downloaded_percentage}%)")
             decomp_progress_mb = round(current_progress["decompress"]["bytes_decompressed"] / 1024 / 1024, 0)
             try:
                   decomp_percentage = current_progress["decompress"]["bytes_decompressed"] / current_progress["decompress"]["total_bytes"] * 100
@@ -137,7 +84,91 @@ if __name__ == '__main__':
                   write_percentage = 0
             print(f"(WRITE) {current_progress['write']['content_written']}/{current_progress['filter']['valid_content']} succesfully filtered content been written to file ({round(write_percentage, 2)}%)")
             time.sleep(5)
+            
 
 
-      #average_rspeed = total_file_size / total_time.total_seconds()
-      logging.info(f"Script finished in {total_time}")#, average speed was {average_rspeed} b/sec")
+if __name__ == '__main__':
+      script_start = datetime.now()
+
+      # Define folder to download data into
+      save_folder_path = './Saved/'
+      os.makedirs(os.path.dirname(save_folder_path), exist_ok=True)
+
+      # Define dates of content needing to be fetched
+      start_date = datetime(2008, 8, 1)
+      end_date = datetime(2009, 8, 1)
+
+      # Define filters to be used and what fields to write to file
+      sub_filter_types = SubFields()
+      com_filter_types = ComFields()
+
+      filter_kwargs = {"subreddits":["unitedkingdom",],
+                       "submission_fields":[
+                             sub_filter_types.CREATED_UTC,
+                             sub_filter_types.AUTHOR,
+                             sub_filter_types.TITLE,
+                             sub_filter_types.SELFTEXT,
+                             "body",
+                             sub_filter_types.SCORE
+                       ],
+                       "comment_fields":[
+                             com_filter_types.CREATED_UTC,
+                             sub_filter_types.AUTHOR,
+                             com_filter_types.BODY,
+                             com_filter_types.SCORE
+                       ]}
+
+      torrent_file_paths = generate_file_paths_by_date(start_date, end_date)
+
+      # Data structures used by threads to communicate
+      t_info_storage = TorrentInfoStorage()
+      progress_info = ProgressInfo()
+
+      # Start Torrent Handler Thread
+      t_handler = threading.Thread(target=TorrentThread, args=(torrent_file_paths, t_info_storage,))
+      t_handler.start()
+
+      # Wait for Torrents to be properly loaded
+      wait_for_torrent_info(t_info_storage)
+
+      # Define job queues for each thread
+      zstd_job_queue = Queue(0)
+      filter_job_queue = Queue(0)
+      write_job_queues = {}
+
+      for file in torrent_file_paths:
+            # Populate ZStd job queue
+            zstd_job_queue.put(file)
+
+            # Initialise write job queues for each file to be written
+            write_job_queues[file] = Queue(0)
+
+            progress_info.init_decompress_file(file)
+
+            # Initialise total size of each file being decompressed
+            file_info = t_info_storage.get_torrent_info(file)
+            progress_info.set_decompress_total_bytes(file, file_info["size"])
+
+      # Start ZStd Threads      
+      zstd_thread_amount = 5
+      zstd_threads = []
+      for n in range(zstd_thread_amount):
+            zstd_threads.append(threading.Thread(target=ZstandardThread, args=(zstd_job_queue, filter_job_queue, save_folder_path, t_info_storage, progress_info,)))
+            zstd_threads[n].start()
+
+      # Start Filter Thread
+      filter_thread = threading.Thread(target=FilterThread, args=(filter_job_queue, write_job_queues, progress_info,), kwargs=filter_kwargs)
+      filter_thread.start()
+
+      # Start Write Threads
+      write_threads = {}
+
+      for file in torrent_file_paths:
+            write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file], progress_info))
+            write_threads[file].start()
+      
+      report_progress(progress_info, t_info_storage, torrent_file_paths)
+
+      script_end = datetime.now()
+      total_time = script_end - script_start
+      logging.info(f"Script finished in {total_time}")
