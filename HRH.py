@@ -9,6 +9,7 @@ from queue import Queue
 import time
 import logging
 import threading
+import click
 import os
 from FieldTypes import SubFields, ComFields
 
@@ -85,9 +86,7 @@ def report_progress(progress_info, t_info_storage, torrent_file_paths):
             print(f"(WRITE) {current_progress['write']['content_written']}/{current_progress['filter']['valid_content']} succesfully filtered content been written to file ({round(write_percentage, 2)}%)")
             time.sleep(5)
             
-
-
-if __name__ == '__main__':
+def fetch_content():
       script_start = datetime.now()
 
       # Define folder to download data into
@@ -172,3 +171,6 @@ if __name__ == '__main__':
       script_end = datetime.now()
       total_time = script_end - script_start
       logging.info(f"Script finished in {total_time}")
+
+if __name__ == "__main__":
+      fetch_content()

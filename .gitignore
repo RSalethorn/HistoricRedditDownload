@@ -8,3 +8,5 @@ Saved
 Processed
 *.code-workspace
 test.py
+HistoricRedditHandler.egg-info
+config.json
