@@ -1,6 +1,6 @@
 import qbittorrentapi
 import threading
-import config
+from ConfigHandler import ConfigHandler
 import logging
 from datetime import datetime
 import time
@@ -10,8 +10,8 @@ class TorrentThread(threading.Thread):
     def __init__(self, file_paths, info_storage):
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
-        # Declare magnet_link for Torrent of PushshiftDump
-        magnet_link = "magnet:?xt=urn:btih:7c0645c94321311bb05bd879ddee4d0eba08aaee&tr=https%3A%2F%2Facademictorrents.com%2Fannounce.php&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce"
+        # Declare magnet_link for Torrent for content
+        magnet_link = ConfigHandler().magnetlink
 
         # Extract hash from magnet link
         torrent_hash = magnet_link.split("&")[0].split(":")[-1]
@@ -42,7 +42,8 @@ class TorrentThread(threading.Thread):
     def connect(self):
         # Get QBitTorrent Connection Details
         # TODO: May have move all QBT connection code into own class in future
-        conn_info = config.conn_info
+        # TODO: Move ConfigHandler initialisation to CLIEntryPoint and have it passed through HRH to this class
+        conn_info = ConfigHandler().conn_info
         qb = qbittorrentapi.Client(**conn_info)
         # Setup Authorisation for client
         try:

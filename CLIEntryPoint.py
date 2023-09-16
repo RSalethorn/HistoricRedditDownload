@@ -1,7 +1,8 @@
 import click
 import os
 import json
-#from HRH import fetch_content
+from datetime import datetime
+from HRH import fetch_content
 
 @click.group()
 def main():
@@ -14,10 +15,10 @@ def main():
 @click.option('--qbt-password', help='This is your password associated with your QBitTorrent API')
 @click.option('--magnetlink', help='This is the magnet link to the torrent containing content')
 def setup(qbt_host, qbt_port, qbt_user, qbt_password, magnetlink):
-    '''For making changes to config file'''
+    '''Setup is for making changes to config file'''
     # Find the place this Python module is installed to.
     install_location = os.path.dirname(os.path.abspath(__file__))
-    config_file_name = '\config.json'
+    config_file_name = '\\config.json'
     config_path = install_location + config_file_name
     print(config_path)
     current_config_data = None
@@ -62,14 +63,23 @@ def setup(qbt_host, qbt_port, qbt_user, qbt_password, magnetlink):
         json.dump(current_config_data, json_config)
 
 @main.command()
-@click.option('--startmonth', type=click.DateTime(formats=['%m-%y']),  help="This is the first month & year for the content to be fetched (Inclusive) (Format is mm-yy)")
-@click.option('--endmonth', type=click.DateTime(formats=['%m-%y']), help="This is the last month & year for the content to be fetched (Inclusive) (Format is mm-yy)")
-def fetch(startmonth, endmonth):
+@click.option('--startmonth', required=True, type=click.DateTime(formats=['%m-%y']),  help="This is the first month & year for the content to be fetched (Inclusive) (Format is mm-yy)")
+@click.option('--endmonth', required=True, type=click.DateTime(formats=['%m-%y']), help="This is the last month & year for the content to be fetched (Inclusive) (Format is mm-yy)")
+@click.option('--subreddit', multiple=True)
+@click.option('--write-folder', type=click.Path(exists=True, file_okay=False, writable=True), help='This is the folder path you want content written to')
+@click.option('--write-file-prefix', help='Optional prefix to add to each file name to be written')
+def fetch(startmonth, endmonth, subreddit, write_folder, write_file_prefix):
     '''For downloading content'''
+    print(subreddit)
+    if write_folder == None:
+        current_time = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
+        write_folder = f'{os.getcwd()}\\HRH-{current_time}\\'
     click.echo(f"Start: {startmonth}, End: {endmonth}")
+    fetch_content(startmonth, endmonth, subreddit, write_folder, write_file_prefix)
 
 
-
+if __name__ == '__main__':
+    fetch(['--startmonth', '01-12', '--endmonth', '01-12', '--subreddit', 'funny'])
         
     
     

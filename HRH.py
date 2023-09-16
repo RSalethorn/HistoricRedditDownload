@@ -85,23 +85,20 @@ def report_progress(progress_info, t_info_storage, torrent_file_paths):
                   write_percentage = 0
             print(f"(WRITE) {current_progress['write']['content_written']}/{current_progress['filter']['valid_content']} succesfully filtered content been written to file ({round(write_percentage, 2)}%)")
             time.sleep(5)
-            
-def fetch_content():
+
+# start_date & end_date should be DateTime objects            
+def fetch_content(start_date, end_date, subreddit, write_folder_path, write_file_prefix):
       script_start = datetime.now()
 
       # Define folder to download data into
       save_folder_path = './Saved/'
       os.makedirs(os.path.dirname(save_folder_path), exist_ok=True)
 
-      # Define dates of content needing to be fetched
-      start_date = datetime(2008, 8, 1)
-      end_date = datetime(2009, 8, 1)
-
       # Define filters to be used and what fields to write to file
       sub_filter_types = SubFields()
       com_filter_types = ComFields()
 
-      filter_kwargs = {"subreddits":["unitedkingdom",],
+      filter_kwargs = {"subreddits": subreddit,
                        "submission_fields":[
                              sub_filter_types.CREATED_UTC,
                              sub_filter_types.AUTHOR,
@@ -163,7 +160,7 @@ def fetch_content():
       write_threads = {}
 
       for file in torrent_file_paths:
-            write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file], progress_info))
+            write_threads[file] = threading.Thread(target=CSVWriteThread, args=(file, write_job_queues[file], progress_info, write_folder_path, write_file_prefix))
             write_threads[file].start()
       
       report_progress(progress_info, t_info_storage, torrent_file_paths)
