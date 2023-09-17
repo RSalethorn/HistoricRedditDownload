@@ -65,21 +65,42 @@ def setup(qbt_host, qbt_port, qbt_user, qbt_password, magnetlink):
 @main.command()
 @click.option('--startmonth', required=True, type=click.DateTime(formats=['%m-%y']),  help="This is the first month & year for the content to be fetched (Inclusive) (Format is mm-yy)")
 @click.option('--endmonth', required=True, type=click.DateTime(formats=['%m-%y']), help="This is the last month & year for the content to be fetched (Inclusive) (Format is mm-yy)")
-@click.option('--subreddit', multiple=True)
-@click.option('--write-folder', type=click.Path(exists=True, file_okay=False, writable=True), help='This is the folder path you want content written to')
+@click.option('--subreddit', multiple=True, help="Subreddit that content should be fetched from (Option can be given multiple times)")
+@click.option('--write-folder', type=click.Path(exists=True, file_okay=False, writable=True), help='This is the folder path you want content written to (Default current working directory)')
 @click.option('--write-file-prefix', help='Optional prefix to add to each file name to be written')
-def fetch(startmonth, endmonth, subreddit, write_folder, write_file_prefix):
+@click.option('--sub-field', multiple=True, required=True, help='Fields from submissions that are to be written to file (Option can be given multiple times)')
+@click.option('--com-field', multiple=True, required=True, help='Fields from comments that are to be written to file (Option can be given multiple times)')
+def fetch(startmonth, endmonth, subreddit, write_folder, write_file_prefix, sub_field, com_field):
     '''For downloading content'''
     print(subreddit)
     if write_folder == None:
         current_time = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
         write_folder = f'{os.getcwd()}\\HRH-{current_time}\\'
     click.echo(f"Start: {startmonth}, End: {endmonth}")
-    fetch_content(startmonth, endmonth, subreddit, write_folder, write_file_prefix)
+    fetch_content(start_date=startmonth, 
+                  end_date=endmonth, 
+                  subreddit=subreddit, 
+                  write_folder_path=write_folder, 
+                  write_file_prefix=write_file_prefix,
+                  submission_fields=sub_field,
+                  comment_fields=com_field)
 
 
 if __name__ == '__main__':
-    fetch(['--startmonth', '01-12', '--endmonth', '01-12', '--subreddit', 'funny'])
+    fetch([
+        '--startmonth', '01-08',
+        '--endmonth', '01-08',
+        '--subreddit', 'london',
+        '--write-folder', 'C:\\Users\\Rob\\Documents\\Test Content',
+        '--write-file-prefix', 'TC',
+        '--sub-field', 'created_utc',
+        '--sub-field', 'author',
+        '--sub-field', 'title',
+        '--sub-field', 'selftext',
+        '--sub-field', 'body',
+        '--com-field', 'created_utc',
+        '--com-field', 'author',
+        '--com-field', 'body'])
         
     
     

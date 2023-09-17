@@ -87,32 +87,18 @@ def report_progress(progress_info, t_info_storage, torrent_file_paths):
             time.sleep(5)
 
 # start_date & end_date should be DateTime objects            
-def fetch_content(start_date, end_date, subreddit, write_folder_path, write_file_prefix):
+def fetch_content(start_date, end_date, subreddit, write_folder_path, write_file_prefix, submission_fields, comment_fields):
       script_start = datetime.now()
+
+      print(submission_fields)
 
       # Define folder to download data into
       save_folder_path = './Saved/'
       os.makedirs(os.path.dirname(save_folder_path), exist_ok=True)
 
-      # Define filters to be used and what fields to write to file
-      sub_filter_types = SubFields()
-      com_filter_types = ComFields()
-
       filter_kwargs = {"subreddits": subreddit,
-                       "submission_fields":[
-                             sub_filter_types.CREATED_UTC,
-                             sub_filter_types.AUTHOR,
-                             sub_filter_types.TITLE,
-                             sub_filter_types.SELFTEXT,
-                             "body",
-                             sub_filter_types.SCORE
-                       ],
-                       "comment_fields":[
-                             com_filter_types.CREATED_UTC,
-                             sub_filter_types.AUTHOR,
-                             com_filter_types.BODY,
-                             com_filter_types.SCORE
-                       ]}
+                       "submission_fields": submission_fields,
+                       "comment_fields": comment_fields}
 
       torrent_file_paths = generate_file_paths_by_date(start_date, end_date)
 
