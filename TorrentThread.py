@@ -7,7 +7,7 @@ import time
 import os
 
 class TorrentThread(threading.Thread):
-    def __init__(self, file_paths, info_storage):
+    def __init__(self, file_paths, info_storage, progress_info):
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
         # Declare magnet_link for Torrent for content
@@ -35,6 +35,10 @@ class TorrentThread(threading.Thread):
         self.select_relevant_files(qb, torrent_hash, file_paths)
 
         while True:
+            current_progress = progress_info.get_progress_overview()
+            if current_progress['write']['content_written'] == current_progress['filter']['valid_content'] and not progress_info.get_filter_threads_status():
+                  break
+            
             t_file_info = qb.torrents_info(torrent_hashes=torrent_hash)[0].files
             info_storage.set_torrent_info(t_file_info)
             time.sleep(2)

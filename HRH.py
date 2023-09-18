@@ -107,7 +107,7 @@ def fetch_content(start_date, end_date, subreddit, write_folder_path, write_file
       progress_info = ProgressInfo()
 
       # Start Torrent Handler Thread
-      t_handler = threading.Thread(target=TorrentThread, args=(torrent_file_paths, t_info_storage,))
+      t_handler = threading.Thread(target=TorrentThread, args=(torrent_file_paths, t_info_storage, progress_info))
       t_handler.start()
 
       # Wait for Torrents to be properly loaded

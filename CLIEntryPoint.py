@@ -88,8 +88,8 @@ def fetch(startmonth, endmonth, subreddit, write_folder, write_file_prefix, sub_
 
 if __name__ == '__main__':
     fetch([
-        '--startmonth', '01-08',
-        '--endmonth', '01-08',
+        '--startmonth', '01-12',
+        '--endmonth', '01-12',
         '--subreddit', 'london',
         '--write-folder', 'C:\\Users\\Rob\\Documents\\Test Content',
         '--write-file-prefix', 'TC',
