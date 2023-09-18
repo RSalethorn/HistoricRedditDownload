@@ -17,6 +17,8 @@ class CSVWriteThread(threading.Thread):
 
         if write_file_prefix != None:
             write_file_prefix = f"{write_file_prefix}_"
+        else:
+            write_file_prefix = ""
 
         LINE_BUFFER_AMOUNT = 25
 
